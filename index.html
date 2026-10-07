@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1.0, user-scalable=no">
+    <title>Unity Web Player | Slides</title>
+    <style>
+      html, body {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        background: #000;
+      }
+      body {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      #unity-canvas {
+        display: block;
+        background: #231F20;
+        aspect-ratio: 16 / 9;
+        width: min(100vw, calc(100vh * 16 / 9));
+        width: min(100vw, calc(100dvh * 16 / 9));
+      }
+
+      /* "Rotate your device" overlay, touch devices in portrait only */
+      #rotate-msg {
+        display: none;
+        position: fixed;
+        inset: 0;
+        z-index: 10;
+        background: #000;
+        color: #fff;
+        font: 20px sans-serif;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: 20px;
+      }
+      @media (orientation: portrait) and (pointer: coarse) {
+        #rotate-msg { display: flex; }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="rotate-msg">Please rotate your device to landscape</div>
+    <canvas id="unity-canvas" tabindex="-1"></canvas>
+
+    <script src="Build/Slides.loader.js"></script>
+    <script>
+      // Android only: on first tap, go fullscreen and lock to landscape.
+      // iOS Safari doesn't support orientation lock, so it relies on the overlay above.
+      function tryLockLandscape() {
+        var el = document.documentElement;
+        var req = el.requestFullscreen || el.webkitRequestFullscreen;
+        if (req && screen.orientation && screen.orientation.lock) {
+          req.call(el)
+            .then(function () { return screen.orientation.lock("landscape"); })
+            .catch(function () {});
+        }
+      }
+      if (/Android/i.test(navigator.userAgent)) {
+        document.addEventListener("pointerup", tryLockLandscape, { once: true });
+      }
+
+      createUnityInstance(document.querySelector("#unity-canvas"), {
+        arguments: [],
+        dataUrl: "Build/Slides.data",
+        frameworkUrl: "Build/Slides.framework.js",
+        codeUrl: "Build/Slides.wasm",
+        streamingAssetsUrl: "StreamingAssets",
+        companyName: "DefaultCompany",
+        productName: "Slides",
+        productVersion: "1.0",
+      }).then((unityInstance) => {
+      }).catch((message) => {
+        alert(message);
+      });
+    </script>
+  </body>
+</html>
